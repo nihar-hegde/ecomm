@@ -2,17 +2,20 @@ import { connectToDb } from "@/db/dbConfig";
 import User from "@/lib/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
-import {signUpFormSchema} from "@/lib/validation/signInFormValidation";
+import {signUpServerFormSchema} from "@/lib/validation/signInFormValidation";
+import z from 'zod';
 
 connectToDb();
-
+type ReqBodyType = z.infer<typeof signUpServerFormSchema>;
 export async function POST(request: NextRequest) {
   try {
-    const reqBody = await request.json();
+    const reqBody:ReqBodyType = await request.json();
     //! validate using zod validation
     try {
-        signUpFormSchema.parse(reqBody);
+        signUpServerFormSchema.parse(reqBody);
       } catch (validationError:any) {
+        console.log("Validation Errors:", validationError.errors);
+
         return NextResponse.json(
           { error: validationError.errors },
           { status: 400 }
@@ -21,9 +24,7 @@ export async function POST(request: NextRequest) {
 
 
       //! Remove the confirm password here
-      const { confirmPassword, ...userData } = reqBody;
-      const { username, email, password } = userData;
-      console.log(userData);
+      const {username,email,password} = reqBody;
 
     //* Check if user already exists
     const user = await User.findOne({ email });
@@ -55,4 +56,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+export async function GET() 
+{
+  return NextResponse.json({success:true});  
 }
