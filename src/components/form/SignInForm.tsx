@@ -16,8 +16,14 @@ import { useForm } from "react-hook-form";
 import { signInFormSchema } from "@/lib/validation/signInFormValidation";
 import * as z from "zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import axios from "axios";
 
 const SignInForm = () => {
+  const router = useRouter();
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof signInFormSchema>>({
     resolver: zodResolver(signInFormSchema),
     defaultValues: {
@@ -26,13 +32,36 @@ const SignInForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof signInFormSchema>) => {
-    alert(values.email);
+  const onSubmit = async (values: z.infer<typeof signInFormSchema>) => {
+    try {
+      setIsLoading(true);
+      //test
+      const userData = {
+        email: values.email,
+        password: values.password,
+      };
+      //!console.log("Sent data ", userData);
+      const response = await axios.post("/api/users/signin", userData);
+      //!console.log("Sign Up success", response.data);
+      router.push("/profile");
+    } catch (error: any) {
+      console.log(
+        "(SignUp error)this error happened inside onSubmit of sign IN: ",
+        error.message
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
         <div className="space-y-2">
+          <div className="flex items-center ">
+            <div className="mx-auto p-4 text-2xl">
+              {isLoading ? "Loading" : "Sign In form"}
+            </div>
+          </div>
           <FormField
             control={form.control}
             name="email"
