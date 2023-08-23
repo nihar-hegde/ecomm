@@ -28,3 +28,8 @@ export const signInFormSchema = z.object({
     }).email({message:"Invalid email"}),
     password:z.string().min(1,{message:"Password is required"}).min(8,{message:"The password must be 8 characters long"}),
   })
+  export const userSchema = z.object({
+    _id:z.string(),
+    username:z.string(),
+    email:z.string()
+  })
